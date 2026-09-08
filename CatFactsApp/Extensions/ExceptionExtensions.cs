@@ -9,5 +9,5 @@ public static class ExceptionExtensions
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
         builder.Services.AddProblemDetails();
         return builder;
-    })
+    }
 }
