@@ -21,7 +21,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-
+app.UseExceptionHandler();
 app.MapCatFactsEndpoints();
 
 app.Run();
