@@ -9,10 +9,9 @@ public static class CatFactsEndpoints
     public static WebApplication MapCatFactsEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/catfacts");
-        group.MapGet("/", async ([FromServices] ICatFactApiProvider catFactApiProvider, CancellationToken cancellationToken) =>
+        group.MapGet("/", async ([FromServices] ICatFactService catFactService, CancellationToken cancellationToken) =>
         {
-            var catFact = await catFactApiProvider.GetCatFactAsync(cancellationToken);
-            await catFactApiProvider.SaveCatFactToFileAsync(catFact, cancellationToken);
+            var catFact = await catFactService.SaveFactAsync(cancellationToken);
             return Results.Ok(catFact);
         });
         return app;
