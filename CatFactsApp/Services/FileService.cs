@@ -1,19 +1,36 @@
 ﻿using CatFactsApp.Models;
+using CatFactsApp.Repositories;
+using CatFactsApp.Results;
 using System.Text.Json;
 
 namespace CatFactsApp.Services;
 
-public class FileService : IFileService
+public class FileService(IFileRepository repository) : IFileService
 {
-    private readonly string _path = "CatFacts.txt";
-
-    public async Task AppendJsonAsync<T>(T value, CancellationToken cancellationToken) 
+    public async Task<Result> AppendJsonAsync<T>(T value, CancellationToken cancellationToken)
     {
-        var json = JsonSerializer.Serialize(value);
-        await File.AppendAllLinesAsync(_path, [json], cancellationToken);
+        try
+        {
+            var json = JsonSerializer.Serialize(value);
+            await repository.AppendJsonAsync(json, cancellationToken);
+            return Result.Success();
+        }
+        catch (IOException ex)
+        {
+            return Result.Failure(ex.Message);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Result.Failure(ex.Message);
+        }
+        catch (NotSupportedException ex)
+        {
+            return Result.Failure(ex.Message);
+        }
+        
     }
 }
-    public interface IFileService
-    {
-    public Task AppendJsonAsync<T>(T value, CancellationToken cancellationToken);
-    }
+public interface IFileService
+{
+    public Task<Result> AppendJsonAsync<T>(T value, CancellationToken cancellationToken);
+}
