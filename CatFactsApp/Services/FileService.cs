@@ -7,17 +7,13 @@ public class FileService : IFileService
 {
     private readonly string _path = "CatFacts.txt";
 
-    public async Task SaveToFileAsync(CatFactApiResponse fact, CancellationToken cancellationToken)
+    public async Task AppendJsonAsync<T>(T value, CancellationToken cancellationToken) 
     {
-        if (fact is null)
-        {
-            return;
-        }
-        string factString = "Fact: " + fact.Fact + " | Length: " + fact.Length;
-        await File.AppendAllLinesAsync(_path, [factString], cancellationToken);
+        var json = JsonSerializer.Serialize(value);
+        await File.AppendAllLinesAsync(_path, [json], cancellationToken);
     }
 }
     public interface IFileService
     {
-        public Task SaveToFileAsync(CatFactApiResponse fact, CancellationToken cancellationToken);
+    public Task AppendJsonAsync<T>(T value, CancellationToken cancellationToken);
     }
