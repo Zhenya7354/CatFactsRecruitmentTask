@@ -1,4 +1,4 @@
-﻿namespace CatFactsApp.Results;
+namespace CatFactsApp.CustomResults;
 
 public sealed class Result
 {

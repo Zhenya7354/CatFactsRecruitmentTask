@@ -1,6 +1,6 @@
-﻿using CatFactsApp.Models;
+using CatFactsApp.Models;
 using CatFactsApp.Repositories;
-using CatFactsApp.Results;
+using CatFactsApp.CustomResults;
 using System.Text.Json;
 
 namespace CatFactsApp.Services;
