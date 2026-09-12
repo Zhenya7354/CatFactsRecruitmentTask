@@ -11,8 +11,12 @@ public static class CatFactsEndpoints
         var group = app.MapGroup("/catfacts");
         group.MapGet("/", async ([FromServices] ICatFactService catFactService, CancellationToken cancellationToken) =>
         {
-            var catFact = await catFactService.SaveFactAsync(cancellationToken);
-            return Results.Ok(catFact);
+            var result = await catFactService.SaveFactAsync(cancellationToken);
+            if(!result.IsSuccess)
+            {
+                return Results.Problem(result.ErrorMessage);
+            }
+            return Results.Ok(result.Value);
         });
         return app;
     }
