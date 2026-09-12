@@ -1,20 +1,28 @@
 ﻿using CatFactsApp.Models;
+using CatFactsApp.Repositories;
 
 namespace CatFactsApp.Services;
 
 public class CatFactService
     (ICatFactClient apiProvider,
-    IFileService fileService): ICatFactService
+    ICatFactRepository repository): ICatFactService
 {
     public async Task<CatFact> SaveFactAsync(CancellationToken cancellationToken)
     {
-        var fact = await apiProvider.GetCatFactAsync(cancellationToken);
-        var result = await fileService.AppendJsonAsync(fact, cancellationToken);
-        if(!result.IsSuccess)
+        var factResult = await apiProvider.GetCatFactAsync(cancellationToken);
+
+        if(!factResult.IsSuccess)
         {
-            throw new InvalidOperationException(result.ErrorMessage);
+            throw new InvalidOperationException(factResult.ErrorMessage);
         }
-        return fact;
+
+        var saveResult = await repository.SaveAsync(factResult.Value, cancellationToken);
+
+        if(!saveResult.IsSuccess)
+        {
+            throw new InvalidOperationException(saveResult.ErrorMessage);
+        }
+        return factResult.Value;
     }
 }
 
