@@ -32,7 +32,7 @@ public class CatFactService
     }
 }
 
-interface ICatFactService
+public interface ICatFactService
 {
     Task<Result<CatFact>> SaveFactAsync(CancellationToken cancellationToken);
 }
