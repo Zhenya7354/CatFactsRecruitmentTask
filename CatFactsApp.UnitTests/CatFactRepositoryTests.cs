@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using CatFactsApp.Configurations;
 using CatFactsApp.Models;
@@ -7,8 +8,9 @@ using Microsoft.Extensions.Options;
 
 namespace CatFactsApp.UnitTests;
 
-public class CatFactRepositoryTests
+public class CatFactRepositoryTests : IDisposable
 {
+    private static readonly List<string> _tempFiles = [];
     [Fact]
     public async Task SaveAsync_Should_WriteCatFactAsJsonLine()
     {
@@ -17,8 +19,6 @@ public class CatFactRepositoryTests
         var repository = CreateRepository(filePath);
         var catFact = new CatFact("Cats are great!", 15);
 
-        try
-        {
             // Act
             var result = await repository.SaveAsync(catFact, default);
 
@@ -31,11 +31,7 @@ public class CatFactRepositoryTests
 
             var savedFact = JsonSerializer.Deserialize<CatFact>(lines[0]);
             savedFact.Should().BeEquivalentTo(catFact);
-        }
-        finally
-        {
-            DeleteFileIfExists(filePath);
-        }
+       
     }
 
     [Fact]
@@ -45,22 +41,16 @@ public class CatFactRepositoryTests
         var filePath = CreateTempFilePath();
         var repository = CreateRepository(filePath);
 
-        try
-        {
             // Act
             await repository.SaveAsync(new CatFact("First fact", 10), default);
             var result = await repository.SaveAsync(new CatFact("Second fact", 11), default);
+            var lines = await File.ReadAllLinesAsync(filePath);
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-
-            var lines = await File.ReadAllLinesAsync(filePath);
             lines.Should().HaveCount(2);
-        }
-        finally
-        {
-            DeleteFileIfExists(filePath);
-        }
+        
+       
     }
 
     [Fact]
@@ -71,19 +61,13 @@ public class CatFactRepositoryTests
         Directory.CreateDirectory(invalidPath);
         var repository = CreateRepository(invalidPath);
 
-        try
-        {
             // Act
             var result = await repository.SaveAsync(new CatFact("Cats are great!", 15), default);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.ErrorMessage.Should().NotBeNullOrWhiteSpace();
-        }
-        finally
-        {
-            Directory.Delete(invalidPath);
-        }
+        
     }
 
     private static CatFactRepository CreateRepository(string filePath)
@@ -98,14 +82,24 @@ public class CatFactRepositoryTests
 
     private static string CreateTempFilePath()
     {
-        return Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.txt");
+        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.txt");
+        _tempFiles.Add(filePath);
+        return filePath;
+    }
+    public void Dispose()
+    {
+        DeleteFileIfExists();
     }
 
-    private static void DeleteFileIfExists(string filePath)
+    private static void DeleteFileIfExists()
     {
-        if (File.Exists(filePath))
+        foreach (var filePath in _tempFiles)
         {
-            File.Delete(filePath);
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
         }
     }
+
 }
